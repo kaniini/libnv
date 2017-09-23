@@ -34,10 +34,7 @@
 #define	_NVLIST_IMPL_H_
 
 #include "nv.h"
-
-#ifndef _KERNEL
 #include <stdint.h>
-#endif
 
 void nvlist_report_missing(int type, const char *name);
 nvpair_t *nvlist_get_nvpair_parent(const nvlist_t *nvl);
