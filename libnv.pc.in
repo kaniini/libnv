@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+includedir=@includedir@
+libdir=@libdir@
+
+Name: libnv
+Description: a library for manipulating and transferring name-value pairs and lists
+URL: http://github.com/kaniini/libnv
+Version: @PACKAGE_VERSION@
+CFlags: -I${includedir}/libnv
+Libs: -L${libdir} -lnv

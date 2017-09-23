@@ -23,5 +23,5 @@ AC_TYPE_UINT8_T
 
 AC_FUNC_STRNLEN
 AC_CHECK_FUNCS([bzero select strcasecmp])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libnv.pc])
 AC_OUTPUT
