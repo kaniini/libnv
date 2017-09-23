@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "common_impl.h"
 #include "msgio.h"
@@ -47,7 +48,7 @@
 #define	PJDLOG_RASSERT(expr, ...)	assert(expr)
 #define	PJDLOG_ABORT(...)		abort()
 
-#define	PKG_MAX_SIZE	(MCLBYTES / CMSG_SPACE(sizeof(int)) - 1)
+#define	PKG_MAX_SIZE	(PAGE_SIZE / CMSG_SPACE(sizeof(int)) - 1)
 
 static int
 msghdr_add_fd(struct cmsghdr *cmsg, int fd)

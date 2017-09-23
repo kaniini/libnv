@@ -33,14 +33,14 @@
 #ifndef	_NV_H_
 #define	_NV_H_
 
-#include <sys/cdefs.h>
+#ifndef __printflike
+#define __printflike(a, b) __attribute__((format (printf, a, b)))
+#endif
 
-#ifndef _KERNEL
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#endif
 
 #ifndef	_NVLIST_T_DECLARED
 #define	_NVLIST_T_DECLARED
@@ -79,7 +79,9 @@ typedef struct nvlist nvlist_t;
 MALLOC_DECLARE(M_NVLIST);
 #endif
 
-__BEGIN_DECLS
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 nvlist_t	*nvlist_create(int flags);
 void		 nvlist_destroy(nvlist_t *nvl);
@@ -241,6 +243,8 @@ void nvlist_free_descriptor(nvlist_t *nvl, const char *name);
 void nvlist_free_descriptor_array(nvlist_t *nvl, const char *name);
 #endif
 
-__END_DECLS
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* !_NV_H_ */

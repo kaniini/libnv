@@ -34,4 +34,16 @@
 
 #define	fd_is_valid(fd)	(fcntl((fd), F_GETFL) != -1 || errno != EBADF)
 
+#ifndef __CAST_AWAY_QUALIFIER
+#define __CAST_AWAY_QUALIFIER(variable, qualifier, type)  (type) (long)(variable)
+#endif
+
+#ifndef __DECONST
+#define __DECONST(type, var)    __CAST_AWAY_QUALIFIER(var, const, type)
+#endif
+
+#ifndef __unused
+#define __unused		__attribute__((unused))
+#endif
+
 #endif	/* !_COMMON_IMPL_H_ */

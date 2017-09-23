@@ -44,6 +44,7 @@
 #include "msgio.h"
 
 #include "nv.h"
+#include "common_impl.h"
 #include "nv_impl.h"
 #include "nvlist_impl.h"
 #include "nvpair_impl.h"
