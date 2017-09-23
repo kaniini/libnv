@@ -48,6 +48,10 @@
 #define	PJDLOG_RASSERT(expr, ...)	assert(expr)
 #define	PJDLOG_ABORT(...)		abort()
 
+#ifndef PAGE_SIZE
+# define PAGE_SIZE	4096
+#endif
+
 #define	PKG_MAX_SIZE	(PAGE_SIZE / CMSG_SPACE(sizeof(int)) - 1)
 
 static int
