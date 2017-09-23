@@ -28,23 +28,11 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#include "config.h"
 
 #include <sys/param.h>
-#include <sys/endian.h>
 #include <sys/queue.h>
 
-#ifdef _KERNEL
-
-#include <sys/errno.h>
-#include <sys/lock.h>
-#include <sys/malloc.h>
-#include <sys/systm.h>
-
-#include <machine/stdarg.h>
-
-#else
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
@@ -55,30 +43,17 @@ __FBSDID("$FreeBSD$");
 #include <unistd.h>
 
 #include "common_impl.h"
-#endif
 
-#ifdef HAVE_PJDLOG
-#include <pjdlog.h>
-#endif
-
-#include <sys/nv.h>
-
+#include "nv.h"
 #include "nv_impl.h"
 #include "nvlist_impl.h"
 #include "nvpair_impl.h"
+#include "nvendian.h"
 
-#ifndef	HAVE_PJDLOG
-#ifdef _KERNEL
-#define	PJDLOG_ASSERT(...)		MPASS(__VA_ARGS__)
-#define	PJDLOG_RASSERT(expr, ...)	KASSERT(expr, (__VA_ARGS__))
-#define	PJDLOG_ABORT(...)		panic(__VA_ARGS__)
-#else
 #include <assert.h>
 #define	PJDLOG_ASSERT(...)		assert(__VA_ARGS__)
 #define	PJDLOG_RASSERT(expr, ...)	assert(expr)
 #define	PJDLOG_ABORT(...)		abort()
-#endif
-#endif
 
 #define	NVPAIR_MAGIC	0x6e7670	/* "nvp" */
 struct nvpair {
@@ -102,7 +77,7 @@ struct nvpair_header {
 	uint16_t	nvph_namesize;
 	uint64_t	nvph_datasize;
 	uint64_t	nvph_nitems;
-} __packed;
+} __attribute__ ((packed));
 
 
 void
@@ -272,7 +247,6 @@ nvpair_clone(const nvpair_t *nvp)
 		data = nvpair_get_nvlist_array(nvp, &datasize);
 		newnvp = nvpair_create_nvlist_array(name, data, datasize);
 		break;
-#ifndef _KERNEL
 	case NV_TYPE_DESCRIPTOR:
 		newnvp = nvpair_create_descriptor(name,
 		    nvpair_get_descriptor(nvp));
@@ -281,7 +255,6 @@ nvpair_clone(const nvpair_t *nvp)
 		data = nvpair_get_descriptor_array(nvp, &datasize);
 		newnvp = nvpair_create_descriptor_array(name, data, datasize);
 		break;
-#endif
 	default:
 		PJDLOG_ABORT("Unknown type: %d.", nvpair_type(nvp));
 	}
@@ -444,7 +417,6 @@ nvpair_pack_nvlist_array_next(unsigned char *ptr, size_t *leftp)
 	return (ptr);
 }
 
-#ifndef _KERNEL
 unsigned char *
 nvpair_pack_descriptor(const nvpair_t *nvp, unsigned char *ptr, int64_t *fdidxp,
     size_t *leftp)
@@ -474,7 +446,6 @@ nvpair_pack_descriptor(const nvpair_t *nvp, unsigned char *ptr, int64_t *fdidxp,
 
 	return (ptr);
 }
-#endif
 
 unsigned char *
 nvpair_pack_binary(const nvpair_t *nvp, unsigned char *ptr, size_t *leftp)
@@ -551,7 +522,6 @@ nvpair_pack_string_array(const nvpair_t *nvp, unsigned char *ptr, size_t *leftp)
 	return (ptr);
 }
 
-#ifndef _KERNEL
 unsigned char *
 nvpair_pack_descriptor_array(const nvpair_t *nvp, unsigned char *ptr,
     int64_t *fdidxp, size_t *leftp)
@@ -589,7 +559,6 @@ nvpair_pack_descriptor_array(const nvpair_t *nvp, unsigned char *ptr,
 
 	return (ptr);
 }
-#endif
 
 void
 nvpair_init_datasize(nvpair_t *nvp)
@@ -799,7 +768,6 @@ nvpair_unpack_nvlist(bool isbe __unused, nvpair_t *nvp,
 	return (ptr);
 }
 
-#ifndef _KERNEL
 const unsigned char *
 nvpair_unpack_descriptor(bool isbe, nvpair_t *nvp, const unsigned char *ptr,
     size_t *leftp, const int *fds, size_t nfds)
@@ -839,7 +807,6 @@ nvpair_unpack_descriptor(bool isbe, nvpair_t *nvp, const unsigned char *ptr,
 
 	return (ptr);
 }
-#endif
 
 const unsigned char *
 nvpair_unpack_binary(bool isbe __unused, nvpair_t *nvp,
@@ -992,7 +959,6 @@ out:
 	return (NULL);
 }
 
-#ifndef _KERNEL
 const unsigned char *
 nvpair_unpack_descriptor_array(bool isbe, nvpair_t *nvp,
     const unsigned char *ptr, size_t *leftp, const int *fds, size_t nfds)
@@ -1043,7 +1009,6 @@ nvpair_unpack_descriptor_array(bool isbe, nvpair_t *nvp,
 
 	return (ptr);
 }
-#endif
 
 const unsigned char *
 nvpair_unpack_nvlist_array(bool isbe __unused, nvpair_t *nvp,
@@ -1244,7 +1209,6 @@ nvpair_create_nvlist(const char *name, const nvlist_t *value)
 	return (nvp);
 }
 
-#ifndef _KERNEL
 nvpair_t *
 nvpair_create_descriptor(const char *name, int value)
 {
@@ -1269,7 +1233,6 @@ nvpair_create_descriptor(const char *name, int value)
 
 	return (nvp);
 }
-#endif
 
 nvpair_t *
 nvpair_create_binary(const char *name, const void *value, size_t size)
@@ -1468,7 +1431,6 @@ fail:
 	return (NULL);
 }
 
-#ifndef _KERNEL
 nvpair_t *
 nvpair_create_descriptor_array(const char *name, const int *value,
     size_t nitems)
@@ -1518,7 +1480,6 @@ fail:
 
 	return (nvp);
 }
-#endif
 
 nvpair_t *
 nvpair_move_string(const char *name, char *value)
@@ -1567,7 +1528,6 @@ nvpair_move_nvlist(const char *name, nvlist_t *value)
 	return (nvp);
 }
 
-#ifndef _KERNEL
 nvpair_t *
 nvpair_move_descriptor(const char *name, int value)
 {
@@ -1588,7 +1548,6 @@ nvpair_move_descriptor(const char *name, int value)
 
 	return (nvp);
 }
-#endif
 
 nvpair_t *
 nvpair_move_binary(const char *name, void *value, size_t size)
@@ -1741,7 +1700,6 @@ fail:
 	return (NULL);
 }
 
-#ifndef _KERNEL
 nvpair_t *
 nvpair_move_descriptor_array(const char *name, int *value, size_t nitems)
 {
@@ -1777,7 +1735,6 @@ fail:
 
 	return (NULL);
 }
-#endif
 
 bool
 nvpair_get_bool(const nvpair_t *nvp)
@@ -1817,7 +1774,6 @@ nvpair_get_nvlist(const nvpair_t *nvp)
 	return ((const nvlist_t *)(intptr_t)nvp->nvp_data);
 }
 
-#ifndef _KERNEL
 int
 nvpair_get_descriptor(const nvpair_t *nvp)
 {
@@ -1827,7 +1783,6 @@ nvpair_get_descriptor(const nvpair_t *nvp)
 
 	return ((int)nvp->nvp_data);
 }
-#endif
 
 const void *
 nvpair_get_binary(const nvpair_t *nvp, size_t *sizep)
@@ -1894,7 +1849,6 @@ nvpair_get_nvlist_array(const nvpair_t *nvp, size_t *nitems)
 	return ((const nvlist_t * const *)((intptr_t)nvp->nvp_data));
 }
 
-#ifndef _KERNEL
 const int *
 nvpair_get_descriptor_array(const nvpair_t *nvp, size_t *nitems)
 {
@@ -1907,7 +1861,6 @@ nvpair_get_descriptor_array(const nvpair_t *nvp, size_t *nitems)
 
 	return ((const int *)(intptr_t)nvp->nvp_data);
 }
-#endif
 
 void
 nvpair_free(nvpair_t *nvp)
@@ -1919,7 +1872,6 @@ nvpair_free(nvpair_t *nvp)
 
 	nvp->nvp_magic = 0;
 	switch (nvp->nvp_type) {
-#ifndef _KERNEL
 	case NV_TYPE_DESCRIPTOR:
 		close((int)nvp->nvp_data);
 		break;
@@ -1927,7 +1879,6 @@ nvpair_free(nvpair_t *nvp)
 		for (i = 0; i < nvp->nvp_nitems; i++)
 			close(((int *)(intptr_t)nvp->nvp_data)[i]);
 		break;
-#endif
 	case NV_TYPE_NVLIST:
 		nvlist_destroy((nvlist_t *)(intptr_t)nvp->nvp_data);
 		break;
