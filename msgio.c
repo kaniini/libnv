@@ -28,9 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <sys/param.h>
 #include <sys/socket.h>
 
@@ -42,19 +39,13 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 #include <unistd.h>
 
-#ifdef HAVE_PJDLOG
-#include <pjdlog.h>
-#endif
-
 #include "common_impl.h"
 #include "msgio.h"
 
-#ifndef	HAVE_PJDLOG
 #include <assert.h>
 #define	PJDLOG_ASSERT(...)		assert(__VA_ARGS__)
 #define	PJDLOG_RASSERT(expr, ...)	assert(expr)
 #define	PJDLOG_ABORT(...)		abort()
-#endif
 
 #define	PKG_MAX_SIZE	(MCLBYTES / CMSG_SPACE(sizeof(int)) - 1)
 
@@ -156,82 +147,6 @@ msg_send(int sock, const struct msghdr *msg)
 		}
 		break;
 	}
-
-	return (0);
-}
-
-int
-cred_send(int sock)
-{
-	unsigned char credbuf[CMSG_SPACE(sizeof(struct cmsgcred))];
-	struct msghdr msg;
-	struct cmsghdr *cmsg;
-	struct iovec iov;
-	uint8_t dummy;
-
-	bzero(credbuf, sizeof(credbuf));
-	bzero(&msg, sizeof(msg));
-	bzero(&iov, sizeof(iov));
-
-	/*
-	 * XXX: We send one byte along with the control message, because
-	 *      setting msg_iov to NULL only works if this is the first
-	 *      packet send over the socket. Once we send some data we
-	 *      won't be able to send credentials anymore. This is most
-	 *      likely a kernel bug.
-	 */
-	dummy = 0;
-	iov.iov_base = &dummy;
-	iov.iov_len = sizeof(dummy);
-
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_control = credbuf;
-	msg.msg_controllen = sizeof(credbuf);
-
-	cmsg = CMSG_FIRSTHDR(&msg);
-	cmsg->cmsg_len = CMSG_LEN(sizeof(struct cmsgcred));
-	cmsg->cmsg_level = SOL_SOCKET;
-	cmsg->cmsg_type = SCM_CREDS;
-
-	if (msg_send(sock, &msg) == -1)
-		return (-1);
-
-	return (0);
-}
-
-int
-cred_recv(int sock, struct cmsgcred *cred)
-{
-	unsigned char credbuf[CMSG_SPACE(sizeof(struct cmsgcred))];
-	struct msghdr msg;
-	struct cmsghdr *cmsg;
-	struct iovec iov;
-	uint8_t dummy;
-
-	bzero(credbuf, sizeof(credbuf));
-	bzero(&msg, sizeof(msg));
-	bzero(&iov, sizeof(iov));
-
-	iov.iov_base = &dummy;
-	iov.iov_len = sizeof(dummy);
-
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_control = credbuf;
-	msg.msg_controllen = sizeof(credbuf);
-
-	if (msg_recv(sock, &msg) == -1)
-		return (-1);
-
-	cmsg = CMSG_FIRSTHDR(&msg);
-	if (cmsg == NULL ||
-	    cmsg->cmsg_len != CMSG_LEN(sizeof(struct cmsgcred)) ||
-	    cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_CREDS) {
-		errno = EINVAL;
-		return (-1);
-	}
-	bcopy(CMSG_DATA(cmsg), cred, sizeof(*cred));
 
 	return (0);
 }
