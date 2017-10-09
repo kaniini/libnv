@@ -223,6 +223,77 @@ void nvlist_free_binary_array(nvlist_t *nvl, const char *name);
 void nvlist_free_descriptor(nvlist_t *nvl, const char *name);
 void nvlist_free_descriptor_array(nvlist_t *nvl, const char *name);
 
+#ifndef	_NVPAIR_T_DECLARED
+#define	_NVPAIR_T_DECLARED
+struct nvpair;
+
+typedef struct nvpair nvpair_t;
+#endif
+
+nvpair_t *nvlist_first_nvpair(const nvlist_t *nvl);
+nvpair_t *nvlist_next_nvpair(const nvlist_t *nvl, const nvpair_t *nvp);
+nvpair_t *nvlist_prev_nvpair(const nvlist_t *nvl, const nvpair_t *nvp);
+
+void nvlist_add_nvpair(nvlist_t *nvl, const nvpair_t *nvp);
+
+bool nvlist_move_nvpair(nvlist_t *nvl, nvpair_t *nvp);
+
+void nvlist_set_parent(nvlist_t *nvl, nvpair_t *parent);
+void nvlist_set_array_next(nvlist_t *nvl, nvpair_t *ele);
+
+const nvpair_t *nvlist_get_nvpair(const nvlist_t *nvl, const char *name);
+
+nvpair_t *nvlist_take_nvpair(nvlist_t *nvl, const char *name);
+
+/* Function removes the given nvpair from the nvlist. */
+void nvlist_remove_nvpair(nvlist_t *nvl, nvpair_t *nvp);
+
+void nvlist_free_nvpair(nvlist_t *nvl, nvpair_t *nvp);
+
+int nvpair_type(const nvpair_t *nvp);
+const char *nvpair_name(const nvpair_t *nvp);
+
+nvpair_t *nvpair_clone(const nvpair_t *nvp);
+
+nvpair_t *nvpair_create_null(const char *name);
+nvpair_t *nvpair_create_bool(const char *name, bool value);
+nvpair_t *nvpair_create_number(const char *name, uint64_t value);
+nvpair_t *nvpair_create_string(const char *name, const char *value);
+nvpair_t *nvpair_create_stringf(const char *name, const char *valuefmt, ...) __printflike(2, 3);
+nvpair_t *nvpair_create_stringv(const char *name, const char *valuefmt, va_list valueap) __printflike(2, 0);
+nvpair_t *nvpair_create_nvlist(const char *name, const nvlist_t *value);
+nvpair_t *nvpair_create_descriptor(const char *name, int value);
+nvpair_t *nvpair_create_binary(const char *name, const void *value, size_t size);
+nvpair_t *nvpair_create_bool_array(const char *name, const bool *value, size_t nitems);
+nvpair_t *nvpair_create_number_array(const char *name, const uint64_t *value, size_t nitems);
+nvpair_t *nvpair_create_string_array(const char *name, const char * const *value, size_t nitems);
+nvpair_t *nvpair_create_nvlist_array(const char *name, const nvlist_t * const *value, size_t nitems);
+nvpair_t *nvpair_create_descriptor_array(const char *name, const int *value, size_t nitems);
+
+nvpair_t *nvpair_move_string(const char *name, char *value);
+nvpair_t *nvpair_move_nvlist(const char *name, nvlist_t *value);
+nvpair_t *nvpair_move_descriptor(const char *name, int value);
+nvpair_t *nvpair_move_binary(const char *name, void *value, size_t size);
+nvpair_t *nvpair_move_bool_array(const char *name, bool *value, size_t nitems);
+nvpair_t *nvpair_move_nvlist_array(const char *name, nvlist_t **value, size_t nitems);
+nvpair_t *nvpair_move_descriptor_array(const char *name, int *value, size_t nitems);
+nvpair_t *nvpair_move_number_array(const char *name, uint64_t *value, size_t nitems);
+nvpair_t *nvpair_move_string_array(const char *name, char **value, size_t nitems);
+
+bool			 nvpair_get_bool(const nvpair_t *nvp);
+uint64_t		 nvpair_get_number(const nvpair_t *nvp);
+const char		*nvpair_get_string(const nvpair_t *nvp);
+const nvlist_t		*nvpair_get_nvlist(const nvpair_t *nvp);
+int			 nvpair_get_descriptor(const nvpair_t *nvp);
+const void		*nvpair_get_binary(const nvpair_t *nvp, size_t *sizep);
+const bool		*nvpair_get_bool_array(const nvpair_t *nvp, size_t *nitemsp);
+const uint64_t		*nvpair_get_number_array(const nvpair_t *nvp, size_t *nitemsp);
+const char * const	*nvpair_get_string_array(const nvpair_t *nvp, size_t *nitemsp);
+const nvlist_t * const	*nvpair_get_nvlist_array(const nvpair_t *nvp, size_t *nitemsp);
+const int		*nvpair_get_descriptor_array(const nvpair_t *nvp, size_t *nitemsp);
+
+void nvpair_free(nvpair_t *nvp);
+
 #ifdef __cplusplus
 }
 #endif
